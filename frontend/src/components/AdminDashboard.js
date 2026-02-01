@@ -4,7 +4,7 @@ import axios from 'axios';
 
 const AdminDashboard = () => {
   const [orders, setOrders] = useState([]);
-  
+
   // Security State
   const [isAdmin, setIsAdmin] = useState(false);
   const [secretCode, setSecretCode] = useState("");
@@ -27,13 +27,13 @@ const AdminDashboard = () => {
     if (isAdmin) {
       const fetchAllOrders = async () => {
         try {
-          const res = await axios.get('http://localhost:5000/api/orders', getConfig());
+          const res = await axios.get('https://quick-dish-hk9b.onrender.com/api/orders', getConfig());
           setOrders(res.data);
         } catch (err) {
           console.error("Error fetching orders:", err);
-          if(err.response &&( err.response.status === 401 || err.response.status === 403)) {
-             alert("Security Alert: You are not an Admin!");
-             setIsAdmin(false);
+          if (err.response && (err.response.status === 401 || err.response.status === 403)) {
+            alert("Security Alert: You are not an Admin!");
+            setIsAdmin(false);
           }
         }
       };
@@ -43,8 +43,8 @@ const AdminDashboard = () => {
 
   const updateStatus = async (orderId, newStatus) => {
     try {
-      await axios.put(`http://localhost:5000/api/orders/${orderId}`, { status: newStatus }, getConfig());
-      setOrders(orders.map(order => 
+      await axios.put(`https://quick-dish-hk9b.onrender.com/api/orders/${orderId}`, { status: newStatus }, getConfig());
+      setOrders(orders.map(order =>
         order._id === orderId ? { ...order, status: newStatus } : order
       ));
     } catch (err) {
@@ -71,7 +71,7 @@ const AdminDashboard = () => {
 
   return (
     <div style={{ padding: '30px', maxWidth: '1000px', margin: '0 auto', fontFamily: 'Arial, sans-serif' }}>
-      
+
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '30px' }}>
         <h1 style={{ color: '#2c3e50', margin: 0 }}>👮‍♂️ Chef's Control Room</h1>
         <button onClick={() => setIsAdmin(false)} style={{ background: '#e74c3c', color: 'white', border: 'none', padding: '10px', borderRadius: '5px', cursor: 'pointer' }}>Lock</button>
@@ -107,13 +107,13 @@ const AdminDashboard = () => {
                 </td>
                 <td style={{ padding: '15px' }}>
                   {/* --- THE FIX: Disable if Delivered --- */}
-                  <select 
-                    onChange={(e) => updateStatus(order._id, e.target.value)} 
+                  <select
+                    onChange={(e) => updateStatus(order._id, e.target.value)}
                     value={order.status || "Ordered"}
-                    disabled={order.status === 'Delivered'} 
-                    style={{ 
-                      padding: '5px', 
-                      borderRadius: '5px', 
+                    disabled={order.status === 'Delivered'}
+                    style={{
+                      padding: '5px',
+                      borderRadius: '5px',
                       border: '1px solid #ddd',
                       cursor: order.status === 'Delivered' ? 'not-allowed' : 'pointer',
                       opacity: order.status === 'Delivered' ? 0.6 : 1

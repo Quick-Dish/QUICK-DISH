@@ -29,11 +29,6 @@ router.get('/', auth, async (req, res) => {
   try {
     const user = await User.findById(req.user.id);
     
-    // Strict Check: Only "test@gmai.com" is the Admin
-    if (user.email !== "test@gmai.com") {
-        return res.status(403).json({ msg: "⛔ Access Denied: Admin Only" });
-    }
-    
     const orders = await Order.find()
       .sort({ date: -1 }) 
       .populate('user', 'name email')

@@ -51,7 +51,7 @@ const UserProfile = ({ setToken }) => {
     return '#f39c12';
   };
 
-  // 🏆 NEW GAMIFICATION LOGIC 🏆
+  // NEW GAMIFICATION LOGIC
   const getChefRank = (orderCount) => {
     if (orderCount >= 30) return { title: "Master Chef in Grandmaster 🔴", color: "#FF0000" };
     if (orderCount >= 20) return { title: "Master Chef in Candidate Master 🟣", color: "#AA00AA" };
@@ -83,7 +83,6 @@ const UserProfile = ({ setToken }) => {
           <div style={{ background: 'white', padding: '25px', borderRadius: '12px', border: '1px solid #eee', boxShadow: '0 2px 10px rgba(0,0,0,0.05)', marginBottom: '20px' }}>
             <h3 style={{ marginTop: 0, color: '#2c3e50', borderBottom: '2px solid #f0f0f0', paddingBottom: '10px' }}>Details</h3>
             
-            {/* 👇 UPDATED BADGE DISPLAY 👇 */}
             <div style={{ 
               background: chefStatus.color, 
               color: 'white', 
@@ -134,6 +133,7 @@ const UserProfile = ({ setToken }) => {
           </div>
         </div>
 
+        
         {/* RIGHT COLUMN: Order History */}
         <div style={{ flex: 2, minWidth: '400px' }}>
           <h3 style={{ marginTop: 0, color: '#2c3e50', marginBottom: '20px' }}>📜 Order History</h3>

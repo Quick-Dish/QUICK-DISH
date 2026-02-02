@@ -35,7 +35,6 @@ const RecipeList = () => {
       <div style={{ background: 'white', padding: '15px 40px', display: 'flex', justifyContent: 'space-between', alignItems: 'center', boxShadow: '0 2px 10px rgba(0,0,0,0.05)' }}>
 
         <div style={{ display: 'flex', alignItems: 'center', gap: '15px' }}>
-          {/* 👇 LOGO SIZE INCREASED HERE (50px -> 100px) */}
           <img src="/Logo.png" alt="Logo" style={{ width: '100px', objectFit: 'contain' }} />
           <h2 style={{ color: '#2c3e50', margin: 0, fontSize: '28px', fontWeight: 'bold' }}>NO CHEF ? NO STRESS</h2>
         </div>

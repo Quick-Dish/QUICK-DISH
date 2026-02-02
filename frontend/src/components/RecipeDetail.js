@@ -9,7 +9,6 @@ const RecipeDetail = () => {
   const [error, setError] = useState('');
   const [isSaved, setIsSaved] = useState(false);
 
-  // Hardcode a default video so it ALWAYS shows up for you
   const defaultVideo = "https://www.youtube.com/watch?v=3AAdKl1UYZs";
 
   useEffect(() => {
@@ -71,7 +70,7 @@ const RecipeDetail = () => {
     }
   };
 
-  // 👇 NEW HELPER FUNCTION: This fixes the "Refused to Connect" error
+  // NEW HELPER FUNCTION: This fixes the "Refused to Connect" error
   const getEmbedUrl = (url) => {
     if (!url) return null;
     let videoId = null;
@@ -136,7 +135,6 @@ const RecipeDetail = () => {
                 {isSaved ? "❤️ Saved" : "🤍 Save"}
               </button>
               
-              {/* 👇 UPDATED BUTTON: Takes you to the new Order Page 👇 */}
               <button
                 onClick={() => navigate(`/order/${id}`)}
                 style={{ background: '#e67e22', color: 'white', border: 'none', padding: '10px 20px', borderRadius: '5px', cursor: 'pointer', fontWeight: 'bold' }}

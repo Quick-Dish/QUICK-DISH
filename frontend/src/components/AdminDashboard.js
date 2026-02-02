@@ -39,10 +39,9 @@ const AdminDashboard = () => {
 
   useEffect(() => {
     if (isAdmin) {
-      // 1. Fetch immediately when page loads
       fetchAllOrders();
 
-      // 2. Set up Auto-Refresh every 5 seconds 🔄
+      // 2. Set up Auto-Refresh every 5 seconds 
       const interval = setInterval(() => {
         fetchAllOrders();
       }, 5000);
@@ -56,7 +55,6 @@ const AdminDashboard = () => {
     try {
       await axios.put(`https://quick-dish-hk9b.onrender.com/api/orders/${orderId}`, { status: newStatus }, getConfig());
       
-      // Update local state instantly so we don't have to wait for the next auto-refresh
       setOrders(orders.map(order =>
         order._id === orderId ? { ...order, status: newStatus } : order
       ));
@@ -66,9 +64,9 @@ const AdminDashboard = () => {
   };
 
   const getStatusColor = (status) => {
-    if (status === 'Delivered') return '#2ecc71'; // Green
-    if (status === 'Shipped') return '#3498db';   // Blue
-    return '#f39c12';                             // Orange
+    if (status === 'Delivered') return '#2ecc71'; 
+    if (status === 'Shipped') return '#3498db';   
+    return '#f39c12';                             
   };
 
   if (!isAdmin) {
@@ -108,7 +106,6 @@ const AdminDashboard = () => {
           </thead>
           <tbody>
             {orders.map((order) => (
-              /* 👇 ADDED PADDING: '20px' here gives the "Equal Space" look */
               <tr key={order._id || Math.random()} style={{ borderBottom: '1px solid #f1f1f1', transition: 'background 0.2s' }}>
                 
                 <td style={{ padding: '20px', color: '#7f8c8d', fontSize: '13px', verticalAlign: 'middle' }}>
@@ -127,7 +124,6 @@ const AdminDashboard = () => {
                     <span style={{ fontSize: '15px', color: '#2c3e50', fontWeight: '500' }}>
                       {order.recipe ? order.recipe.title : "Unknown Item"}
                     </span>
-                    {/* Badge Style */}
                     <span style={{ 
                       background: '#fff3cd', 
                       color: '#856404', 

@@ -8,7 +8,7 @@ import Login from './components/Login';
 import UserProfile from './components/UserProfile';
 import AdminDashboard from './components/AdminDashboard';
 
-// 👇 1. IMPORT THE NEW ORDER PAGE
+// IMPORT THE NEW ORDER PAGE
 import OrderPage from './components/OrderPage'; 
 
 function App() {
@@ -24,7 +24,6 @@ function App() {
         <Route path="/profile" element={<UserProfile setToken={setToken} />} />
         <Route path="/admin" element={<AdminDashboard />} />
 
-        {/* 👇 2. ADD THIS ROUTE FOR THE CHECKOUT PAGE */}
         <Route path="/order/:recipeId" element={<OrderPage />} />
 
       </Routes>

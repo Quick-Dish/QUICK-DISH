@@ -40,25 +40,7 @@ const RecipeDetail = () => {
     fetchData();
   }, [id]);
 
-  const handleOrder = async () => {
-    const token = localStorage.getItem('token');
-
-    if (!token) {
-      if (window.confirm("You need to login to place an order. Go to login page?")) {
-        navigate('/login');
-      }
-      return;
-    }
-
-    try {
-      const config = { headers: { 'x-auth-token': token } };
-      await axios.post('https://quick-dish-hk9b.onrender.com/api/orders', { recipeId: id }, config);
-      alert("✅ Order Placed Successfully! We are preparing your kit.");
-      // STAY ON PAGE (No redirect)
-    } catch (err) {
-      alert("❌ Order Failed: " + (err.response?.data?.msg || "Server Error"));
-    }
-  };
+  // (Deleted the old handleOrder function from here)
 
   const handleSave = async () => {
     const token = localStorage.getItem('token');
@@ -98,7 +80,7 @@ const RecipeDetail = () => {
     if (url.includes("v=")) {
       videoId = url.split("v=")[1].split("&")[0];
     }
-    // Handle short "youtu.be/" URLs (like the one you used for Litti Chokha)
+    // Handle short "youtu.be/" URLs
     else if (url.includes("youtu.be/")) {
       videoId = url.split("youtu.be/")[1].split("?")[0];
     }
@@ -124,7 +106,7 @@ const RecipeDetail = () => {
 
       <div style={{ border: '1px solid #ddd', borderRadius: '15px', overflow: 'hidden', boxShadow: '0 4px 15px rgba(0,0,0,0.1)', background: 'white' }}>
 
-        {/* HERO IMAGE (Restored to Original) */}
+        {/* HERO IMAGE */}
         <img
           src={recipe.image || "https://images.unsplash.com/photo-1546069901-ba9599a7e63c?w=800&auto=format&fit=crop&q=60"}
           alt={recipe.title}
@@ -153,8 +135,10 @@ const RecipeDetail = () => {
               >
                 {isSaved ? "❤️ Saved" : "🤍 Save"}
               </button>
+              
+              {/* 👇 UPDATED BUTTON: Takes you to the new Order Page 👇 */}
               <button
-                onClick={handleOrder}
+                onClick={() => navigate(`/order/${id}`)}
                 style={{ background: '#e67e22', color: 'white', border: 'none', padding: '10px 20px', borderRadius: '5px', cursor: 'pointer', fontWeight: 'bold' }}
               >
                 🛒 Order Kit
@@ -190,14 +174,13 @@ const RecipeDetail = () => {
             <p style={{ lineHeight: '1.6', color: '#555' }}>{recipe.instructions}</p>
           )}
 
-          {/* --- BOTTOM SECTION: VIDEO (Always Visible Now) --- */}
+          {/* --- VIDEO SECTION --- */}
           <div style={{ marginTop: '40px', paddingTop: '20px', borderTop: '1px solid #eee' }}>
             <h3 style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
               🎥 Watch How to Cook
             </h3>
             <div style={{ position: 'relative', paddingBottom: '56.25%', height: 0, overflow: 'hidden', borderRadius: '10px', boxShadow: '0 4px 10px rgba(0,0,0,0.1)' }}>
 
-              {/* 👇 UPDATED IFRAME: Uses the getEmbedUrl helper function */}
               <iframe
                 style={{ position: 'absolute', top: 0, left: 0, width: '100%', height: '100%' }}
                 src={getEmbedUrl(videoToPlay)}

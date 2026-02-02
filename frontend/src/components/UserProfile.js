@@ -1,67 +1,48 @@
 import React, { useState, useEffect } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
 import axios from 'axios';
+import { useNavigate } from 'react-router-dom';
 
 const UserProfile = ({ setToken }) => {
   const navigate = useNavigate();
-  const [user, setUser] = useState(null);
+  const [user, setUser] = useState({});
   const [orders, setOrders] = useState([]);
-  const [error, setError] = useState('');
-
-  // Toggles for sections
-  const [showHistory, setShowHistory] = useState(false);
-  const [showSettings, setShowSettings] = useState(false);
-
-  const userId = localStorage.getItem('userId');
-
-  const handleLogout = () => {
-    localStorage.clear();
-    setToken(null);
-    navigate('/');
-  };
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    if (!userId) {
-      navigate('/login');
-      return;
-    }
+    const fetchData = async () => {
+      const token = localStorage.getItem('token');
+      const userId = localStorage.getItem('userId');
 
-    const fetchUserData = async () => {
+      if (!token) {
+        navigate('/login');
+        return;
+      }
+
+      const config = { headers: { 'x-auth-token': token } };
+
       try {
-        const res = await axios.get(`https://quick-dish-hk9b.onrender.com/api/users/${userId}`);
-        setUser(res.data);
+        const userRes = await axios.get(`https://quick-dish-hk9b.onrender.com/api/users/${userId}`);
+        setUser(userRes.data);
+
+        const orderRes = await axios.get('https://quick-dish-hk9b.onrender.com/api/orders/myorders', config);
+        setOrders(orderRes.data);
+        
+        setLoading(false);
       } catch (err) {
-        console.error("Error fetching user:", err);
-        setError("Could not load profile.");
+        console.error(err);
+        setLoading(false);
       }
     };
 
-    const fetchOrders = async () => {
-      try {
-        const token = localStorage.getItem('token');
-        if (!token) return;
-        const config = { headers: { 'x-auth-token': token } };
+    fetchData();
+  }, [navigate]);
 
-        // Using the correct /myorders endpoint
-        const res = await axios.get(`https://quick-dish-hk9b.onrender.com/api/orders/myorders`, config);
-        setOrders(res.data);
-      } catch (err) {
-        console.error("Error fetching orders:", err);
-      }
-    };
-
-    fetchUserData();
-    fetchOrders();
-  }, [userId, navigate]);
-
-  // --- GAMIFICATION LOGIC ---
-  const getChefRank = (orderCount) => {
-    if (orderCount >= 30) return { title: "Master Chef in Grandmaster 🔴", color: "#FF0000" };
-    if (orderCount >= 20) return { title: "Master Chef in Candidate Master 🟣", color: "#AA00AA" };
-    if (orderCount >= 10) return { title: "Master Chef in Expert 🔵", color: "#0000FF" };
-    if (orderCount >= 6) return { title: "Master Chef in Specialist 💠", color: "#03A89E" };
-    if (orderCount >= 3) return { title: "Master Chef in Pupil 🟢", color: "#008000" };
-    return { title: "Master Chef in Newbie 🔘", color: "#808080" };
+  const handleLogout = () => {
+    localStorage.removeItem('token');
+    localStorage.removeItem('userId');
+    localStorage.removeItem('name');
+    setToken(null);
+    navigate('/login');
   };
 
   const getStatusColor = (status) => {
@@ -70,138 +51,147 @@ const UserProfile = ({ setToken }) => {
     return '#f39c12';
   };
 
-  if (!userId) return null;
-  if (error) return <div style={{ textAlign: 'center', padding: '50px', color: 'red' }}><h3>{error}</h3><button onClick={handleLogout}>Logout</button></div>;
-  if (!user) return <div style={{ textAlign: 'center', padding: '50px' }}>Loading...</div>;
+  // 🏆 NEW GAMIFICATION LOGIC 🏆
+  const getChefRank = (orderCount) => {
+    if (orderCount >= 30) return { title: "Master Chef in Grandmaster 🔴", color: "#FF0000" };
+    if (orderCount >= 20) return { title: "Master Chef in Candidate Master 🟣", color: "#AA00AA" };
+    if (orderCount >= 10) return { title: "Master Chef in Expert 🔵", color: "#0000FF" };
+    if (orderCount >= 6)  return { title: "Master Chef in Specialist 💠", color: "#03A89E" };
+    if (orderCount >= 3)  return { title: "Master Chef in Pupil 🟢", color: "#008000" };
+    return { title: "Master Chef in Newbie 🔘", color: "#808080" };
+  };
 
-  const rank = getChefRank(orders.length);
+  if (loading) return <div style={{ padding: '50px', textAlign: 'center' }}>Loading your profile...</div>;
+
+  const chefStatus = getChefRank(orders.length);
 
   return (
-    <div style={{ maxWidth: '500px', margin: '30px auto', fontFamily: 'Arial, sans-serif' }}>
-      <Link to="/" style={{ textDecoration: 'none', color: '#555', display: 'block', marginBottom: '20px' }}>← Back to Menu</Link>
-
-      {/* --- HEADER WITH RANK --- */}
-      <div style={{ textAlign: 'center', marginBottom: '40px' }}>
-        <img
-          src="https://cdn-icons-png.flaticon.com/512/3135/3135715.png"
-          alt="Profile"
-          style={{
-            width: '120px',
-            height: '120px',
-            borderRadius: '50%',
-            border: `4px solid ${rank.color}`,
-            marginBottom: '15px',
-            padding: '3px'
-          }}
-        />
-        <h2 style={{ margin: 0, color: rank.color }}>{user.name}</h2>
-        <p style={{ color: rank.color, fontWeight: 'bold', marginTop: '5px' }}>{rank.title}</p>
-        <p style={{ fontSize: '12px', color: '#999', margin: 0 }}>{orders.length} Orders Completed</p>
+    <div style={{ maxWidth: '1100px', margin: '40px auto', padding: '20px', fontFamily: 'Arial, sans-serif' }}>
+      
+      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '30px' }}>
+        <h1 style={{ color: '#2c3e50', margin: 0 }}>👤 My Profile</h1>
+        <button onClick={handleLogout} style={{ padding: '10px 20px', background: '#e74c3c', color: 'white', border: 'none', borderRadius: '5px', cursor: 'pointer', fontWeight: 'bold' }}>
+          Logout
+        </button>
       </div>
 
-      <div style={{ background: 'white', borderRadius: '15px', boxShadow: '0 4px 15px rgba(0,0,0,0.05)', overflow: 'hidden' }}>
+      <div style={{ display: 'flex', gap: '30px', flexWrap: 'wrap' }}>
+        
+        {/* LEFT COLUMN: User Info & Favorites */}
+        <div style={{ flex: 1, minWidth: '320px' }}>
+          
+          <div style={{ background: 'white', padding: '25px', borderRadius: '12px', border: '1px solid #eee', boxShadow: '0 2px 10px rgba(0,0,0,0.05)', marginBottom: '20px' }}>
+            <h3 style={{ marginTop: 0, color: '#2c3e50', borderBottom: '2px solid #f0f0f0', paddingBottom: '10px' }}>Details</h3>
+            
+            {/* 👇 UPDATED BADGE DISPLAY 👇 */}
+            <div style={{ 
+              background: chefStatus.color, 
+              color: 'white', 
+              padding: '12px', 
+              borderRadius: '8px', 
+              textAlign: 'center', 
+              marginBottom: '20px', 
+              fontWeight: 'bold', 
+              boxShadow: '0 2px 5px rgba(0,0,0,0.1)',
+              textShadow: '0 1px 2px rgba(0,0,0,0.2)' 
+            }}>
+               {chefStatus.title} <br/> 
+               <span style={{ fontSize: '0.9em', fontWeight: 'normal', opacity: 0.9 }}>
+                 ({orders.length} Orders)
+               </span>
+            </div>
 
-        {/* ❤️ FAVORITES SECTION */}
-        <div style={{ padding: '20px', borderBottom: '1px solid #eee' }}>
-          <h4 style={{ margin: '0 0 15px 0' }}>❤️ My Favorites</h4>
-          {user.favorites && user.favorites.length > 0 ? (
-            <div style={{ display: 'flex', gap: '10px', overflowX: 'auto', paddingBottom: '10px' }}>
-              {user.favorites.map((fav) => {
-                if (!fav || !fav._id) return null;
-                return (
-                  <Link to={`/recipe/${fav._id}`} key={fav._id} style={{ textDecoration: 'none' }}>
-                    <div style={{ width: '80px', flexShrink: 0, textAlign: 'center' }}>
-                      <img
-                        src={fav.image || "https://images.unsplash.com/photo-1546069901-ba9599a7e63c?w=150&auto=format&fit=crop&q=60"}
-                        alt={fav.title}
-                        style={{ width: '80px', height: '80px', borderRadius: '10px', objectFit: 'cover', marginBottom: '5px' }}
-                      />
-                      <div style={{ fontSize: '10px', color: '#333', fontWeight: 'bold', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
-                        {fav.title}
-                      </div>
-                    </div>
-                  </Link>
-                );
-              })}
+            <p style={{ margin: '10px 0' }}><strong>Name:</strong> {user.name}</p>
+            <p style={{ margin: '10px 0' }}><strong>Email:</strong> {user.email}</p>
+            <p style={{ margin: '10px 0' }}><strong>Member Since:</strong> {user.date ? new Date(user.date).toLocaleDateString() : 'N/A'}</p>
+          </div>
+
+          <div style={{ background: 'white', padding: '25px', borderRadius: '12px', border: '1px solid #eee', boxShadow: '0 2px 10px rgba(0,0,0,0.05)' }}>
+            <h3 style={{ marginTop: 0, color: '#2c3e50', borderBottom: '2px solid #f0f0f0', paddingBottom: '10px' }}>❤️ Favorites</h3>
+            
+            {user.favorites && user.favorites.length > 0 ? (
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '15px' }}>
+                {user.favorites.map((fav) => (
+                  <div 
+                    key={fav._id || Math.random()} 
+                    onClick={() => navigate(`/recipe/${fav._id}`)}
+                    style={{ display: 'flex', alignItems: 'center', gap: '15px', cursor: 'pointer', padding: '10px', borderRadius: '8px', transition: 'background 0.2s', border: '1px solid #f9f9f9' }}
+                    onMouseOver={(e) => e.currentTarget.style.background = '#f8f9fa'}
+                    onMouseOut={(e) => e.currentTarget.style.background = 'white'}
+                  >
+                    <img 
+                      src={fav.image || "https://via.placeholder.com/50"} 
+                      alt={fav.title} 
+                      style={{ width: '50px', height: '50px', borderRadius: '8px', objectFit: 'cover' }} 
+                    />
+                    <span style={{ fontWeight: 'bold', color: '#555' }}>{fav.title}</span>
+                  </div>
+                ))}
+              </div>
+            ) : (
+              <p style={{ color: '#999', fontSize: '14px', textAlign: 'center' }}>No favorites yet.</p>
+            )}
+          </div>
+        </div>
+
+        {/* RIGHT COLUMN: Order History */}
+        <div style={{ flex: 2, minWidth: '400px' }}>
+          <h3 style={{ marginTop: 0, color: '#2c3e50', marginBottom: '20px' }}>📜 Order History</h3>
+          
+          {orders.length === 0 ? (
+            <div style={{ padding: '40px', background: 'white', borderRadius: '12px', textAlign: 'center', color: '#777', border: '1px solid #eee' }}>
+              You haven't ordered anything yet. <br/> 
+              <span onClick={() => navigate('/')} style={{ color: '#3498db', cursor: 'pointer', textDecoration: 'underline', fontWeight: 'bold' }}>Go order something delicious!</span>
             </div>
           ) : (
-            <p style={{ fontSize: '12px', color: '#999' }}>No favorites yet.</p>
-          )}
-        </div>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '15px' }}>
+              {orders.map((order) => (
+                <div 
+                  key={order._id} 
+                  style={{ border: '1px solid #eee', borderRadius: '12px', padding: '20px', background: 'white', boxShadow: '0 2px 5px rgba(0,0,0,0.03)', display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: '20px' }}
+                >
+                  
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '20px', flex: 1 }}>
+                    <img 
+                      src={order.recipe ? order.recipe.image : "https://via.placeholder.com/80"} 
+                      alt="Dish"
+                      onClick={() => order.recipe && navigate(`/recipe/${order.recipe._id}`)}
+                      style={{ width: '80px', height: '80px', borderRadius: '10px', objectFit: 'cover', cursor: 'pointer', border: '1px solid #eee' }} 
+                    />
 
-        {/* 📜 ORDER HISTORY (UPDATED WITH IMAGE & TIME) */}
-        <div style={{ borderBottom: '1px solid #eee' }}>
-          <div onClick={() => setShowHistory(!showHistory)} style={{ display: 'flex', alignItems: 'center', padding: '20px', cursor: 'pointer' }}>
-            <div style={{ flex: 1 }}><h4 style={{ margin: 0 }}>📜 Order History</h4></div>
-            <span style={{ color: '#ccc' }}>{showHistory ? '▲' : '▼'}</span>
-          </div>
-
-          {showHistory && (
-            <div style={{ background: '#fafafa', padding: '0 20px 20px 20px' }}>
-              {orders.length > 0 ? (
-                orders.map((order) => (
-                  <Link
-                    to={`/recipe/${order.recipe ? order.recipe._id : '#'}`}
-                    key={order._id}
-                    style={{ textDecoration: 'none', color: 'inherit' }}
-                  >
-                    {/* 👇 NEW LAYOUT FOR HISTORY ITEM 👇 */}
-                    <div style={{ display: 'flex', alignItems: 'center', gap: '15px', padding: '15px 0', borderBottom: '1px dashed #ddd', cursor: 'pointer' }}>
-
-                      {/* 1. Dish Image */}
-                      <img
-                        src={order.recipe ? order.recipe.image : "https://via.placeholder.com/50"}
-                        alt="Dish"
-                        style={{ width: '60px', height: '60px', borderRadius: '8px', objectFit: 'cover' }}
-                      />
-
-                      {/* 2. Text Details */}
-                      <div style={{ flex: 1 }}>
-                        <div style={{ fontWeight: 'bold', fontSize: '14px', color: '#2c3e50', marginBottom: '3px' }}>
-                          {order.recipe ? order.recipe.title : "Unknown Recipe"}
-                        </div>
-
-                        {/* Date and Time */}
-                        <div style={{ fontSize: '12px', color: '#888' }}>
-                          {new Date(order.date).toLocaleString([], {
-                            year: 'numeric', month: 'numeric', day: 'numeric',
-                            hour: '2-digit', minute: '2-digit'
-                          })}
-                        </div>
-                      </div>
-
-                      {/* 3. Status Badge */}
-                      <div style={{ fontSize: '11px', fontWeight: 'bold', color: 'white', background: getStatusColor(order.status), padding: '4px 8px', borderRadius: '10px' }}>
-                        {order.status}
-                      </div>
-
+                    <div>
+                      <h4 
+                        onClick={() => order.recipe && navigate(`/recipe/${order.recipe._id}`)}
+                        style={{ margin: '0 0 5px 0', color: '#2c3e50', cursor: 'pointer', fontSize: '18px', display: 'flex', alignItems: 'center', gap: '10px' }}
+                      >
+                        {order.recipe ? order.recipe.title : "Unknown Recipe"}
+                        <span style={{ background: '#e67e22', color: 'white', padding: '2px 8px', borderRadius: '12px', fontSize: '12px', fontWeight: 'bold' }}>
+                          x {order.quantity || 1}
+                        </span>
+                      </h4>
+                      
+                      <p style={{ margin: 0, color: '#7f8c8d', fontSize: '13px' }}>
+                        📅 {new Date(order.date).toLocaleDateString()}
+                      </p>
+                      <p style={{ margin: '5px 0 0 0', color: '#95a5a6', fontSize: '12px' }}>
+                        📍 {order.address ? (order.address.length > 35 ? order.address.substring(0, 35) + '...' : order.address) : "No Address"}
+                      </p>
                     </div>
-                  </Link>
-                ))
-              ) : (<p style={{ textAlign: 'center', fontSize: '13px', color: '#999' }}>No orders found.</p>)}
+                  </div>
+
+                  <div style={{ textAlign: 'right', minWidth: '100px' }}>
+                    <span style={{ background: getStatusColor(order.status), color: 'white', padding: '6px 12px', borderRadius: '20px', fontSize: '12px', fontWeight: 'bold', textTransform: 'uppercase' }}>
+                      {order.status || "Ordered"}
+                    </span>
+                    <div style={{ marginTop: '8px', fontSize: '12px', color: '#bbb', fontWeight: 'bold' }}>
+                      {order.paymentMethod || "COD"}
+                    </div>
+                  </div>
+
+                </div>
+              ))}
             </div>
           )}
-        </div>
-
-        {/* ⚙️ SETTINGS */}
-        <div style={{ borderBottom: '1px solid #eee' }}>
-          <div onClick={() => setShowSettings(!showSettings)} style={{ display: 'flex', alignItems: 'center', padding: '20px', cursor: 'pointer' }}>
-            <div style={{ flex: 1 }}><h4 style={{ margin: 0 }}>⚙️ Settings</h4></div>
-            <span style={{ color: '#ccc' }}>{showSettings ? '▲' : '▼'}</span>
-          </div>
-
-          {showSettings && (
-            <div style={{ background: '#fafafa', padding: '0 20px 20px 20px', fontSize: '14px', color: '#555' }}>
-              <p style={{ marginBottom: '10px' }}>🔔 <strong>Notifications:</strong> On</p>
-              <p style={{ marginBottom: '10px' }}>📧 <strong>Email:</strong> {user.email}</p>
-              <p style={{ marginBottom: '10px', color: '#e67e22', cursor: 'pointer' }}>🔒 Change Password</p>
-            </div>
-          )}
-        </div>
-
-        {/* LOGOUT */}
-        <div onClick={handleLogout} style={{ padding: '20px', cursor: 'pointer', background: '#fff5f5', color: '#e74c3c', fontWeight: 'bold' }}>
-          🚪 Logout
         </div>
 
       </div>

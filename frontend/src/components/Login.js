@@ -1,3 +1,4 @@
+import { Link } from 'react-router-dom';
 import React, { useState } from 'react';
 import axios from 'axios';
 import { useNavigate } from 'react-router-dom';
@@ -107,6 +108,12 @@ const Login = ({ setToken }) => {
         >
           {isRegistering ? 'Login here' : 'Create an account'}
         </button>
+      </div>
+
+      <div style={{ textAlign: 'center', marginTop: '20px' }}>
+        <Link to="/" style={{ textDecoration: 'none', color: '#555', fontSize: '14px' }}>
+          ← Back to Home
+        </Link>
       </div>
     </div>
   );
